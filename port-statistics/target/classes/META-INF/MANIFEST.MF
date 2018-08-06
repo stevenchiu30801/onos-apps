@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1533547121747
+Build-Jdk: 1.8.0_181
+Built-By: steven
+Bundle-Description: ONOS OSGi bundle archetype
+Bundle-ManifestVersion: 2
+Bundle-Name: port-statistics
+Bundle-SymbolicName: nctu.winlab.port-statistics
+Bundle-Version: 1.9.0
+Created-By: Apache Maven Bundle Plugin
+Export-Package: nctu.winlab.portstatistics;uses:="org.onosproject.net.de
+ vice,org.slf4j";version="1.9.0"
+Import-Package: org.onosproject.net;version="[1.13,2)",org.onosproject.n
+ et.device;version="[1.13,2)",org.slf4j;version="[1.7,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Service-Component: OSGI-INF/nctu.winlab.portstatistics.AppComponent.xml
+Tool: Bnd-3.3.0.201609221906
