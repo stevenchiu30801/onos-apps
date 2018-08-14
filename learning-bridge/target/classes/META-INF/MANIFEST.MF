@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1534168129749
+Build-Jdk: 1.8.0_181
+Built-By: steven
+Bundle-Description: ONOS OSGi bundle archetype
+Bundle-ManifestVersion: 2
+Bundle-Name: learning-bridge
+Bundle-SymbolicName: nctu.winlab.learning-bridge
+Bundle-Version: 1.9.0
+Created-By: Apache Maven Bundle Plugin
+Export-Package: nctu.winlab.learningbridge;uses:="org.onosproject.core,o
+ rg.onosproject.net.flow,org.onosproject.net.flowobjective,org.onosproje
+ ct.net.packet,org.onosproject.net.topology";version="1.9.0"
+Import-Package: org.onlab.packet;version="[1.13,2)",org.onosproject.core
+ ;version="[1.13,2)",org.onosproject.event;version="[1.13,2)",org.onospr
+ oject.net;version="[1.13,2)",org.onosproject.net.flow;version="[1.13,2)
+ ",org.onosproject.net.flowobjective;version="[1.13,2)",org.onosproject.
+ net.packet;version="[1.13,2)",org.onosproject.net.topology;version="[1.
+ 13,2)",org.slf4j;version="[1.7,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Service-Component: OSGI-INF/nctu.winlab.learningbridge.AppComponent.xml
+Tool: Bnd-3.3.0.201609221906
