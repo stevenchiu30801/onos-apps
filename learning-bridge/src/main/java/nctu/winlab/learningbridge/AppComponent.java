@@ -87,6 +87,7 @@ public class AppComponent {
         appId = coreService.registerApplication("nctu.winlab.learningbridge");
 
         packetService.addProcessor(processor, PacketProcessor.director(2));
+        topologyService.addListener(topologyListener);
 
         requestIntercepts();
 
@@ -96,6 +97,9 @@ public class AppComponent {
     @Deactivate
     protected void deactivate() {
         flowRuleService.removeFlowRulesById(appId);
+        packetService.removeProcessor(processor);
+        topologyService.removeListener(topologyListener);
+        processor = null;
 
         log.info("Stopped");
     }
@@ -123,7 +127,7 @@ public class AppComponent {
             macToPort.put(mac, port);
             mapping.replace(id, macToPort);
         }
-        else if(p != port) {
+        else if(!p.equals(port)) {
             log.warn("Mapping of MAC {} on device {} changes. Original: {}, New: {}.", mac, id, p, port);
             macToPort.replace(mac, port);
             mapping.replace(id, macToPort);
@@ -131,13 +135,13 @@ public class AppComponent {
     }
 
     private void flood(PacketContext context) {
-        // if(topologyService.isBroadcastPoint(topologyService.currentTopology(),
-        //                                     context.inPacket().receivedFrom())) {
-        //     packetOut(context, PortNumber.FLOOD);
-        // }
-        // else {
-        //     context.block();
-        // }
+        if(topologyService.isBroadcastPoint(topologyService.currentTopology(),
+                                            context.inPacket().receivedFrom())) {
+            packetOut(context, PortNumber.FLOOD);
+        }
+        else {
+            context.block();
+        }
 
         packetOut(context, PortNumber.FLOOD);
     }
@@ -162,27 +166,32 @@ public class AppComponent {
         public void process(PacketContext context) {
             InboundPacket pkt = context.inPacket();
             DeviceId deviceId = pkt.receivedFrom().deviceId();
-            PortNumber srcPort = pkt.receivedFrom().port();
+            PortNumber inPort = pkt.receivedFrom().port();
             MacAddress srcMac = pkt.parsed().getSourceMAC();
 
-            learningMac(deviceId, srcMac, srcPort);
+            short etherType = pkt.parsed().getEtherType();
+            if(etherType == Ethernet.TYPE_LLDP || etherType == Ethernet.TYPE_BSN) {
+                return;
+            }
+
+            learningMac(deviceId, srcMac, inPort);
         
             HashMap<MacAddress, PortNumber> macToPort = mapping.get(deviceId);
             MacAddress dstMac = pkt.parsed().getDestinationMAC();
-            PortNumber dstPort = macToPort.get(dstMac);
+            PortNumber outPort = macToPort.get(dstMac);
 
-            if(dstPort == null) {
+            if(outPort == null) {
                 flood(context);
             }
             else {
-                packetOut(context, dstPort);
+                packetOut(context, outPort);
 
                 TrafficSelector selectorBuilder = DefaultTrafficSelector.builder()
                         .matchEthDst(pkt.parsed().getDestinationMAC())
                         .build();
 
                 TrafficTreatment treatment = DefaultTrafficTreatment.builder()
-                        .setOutput(dstPort)
+                        .setOutput(outPort)
                         .build();
 
                 ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
