@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1539069608496
+Build-Jdk: 1.8.0_181
+Built-By: steven
+Bundle-Description: ONOS OSGi bundle archetype
+Bundle-ManifestVersion: 2
+Bundle-Name: dhcp-fwd
+Bundle-SymbolicName: nctu.winlab.dhcp-fwd
+Bundle-Version: 1.9.0
+Created-By: Apache Maven Bundle Plugin
+Export-Package: nctu.winlab.dhcpfwd;version="1.9.0";uses:="org.onosproje
+ ct.core,org.onosproject.net,org.onosproject.net.config"
+Import-Package: com.fasterxml.jackson.databind;version="[2.9,3)",com.fas
+ terxml.jackson.databind.node;version="[2.9,3)",com.google.common.base;v
+ ersion="[22.0,23)",com.google.common.collect;version="[22.0,23)",org.on
+ osproject.core;version="[1.14,2)",org.onosproject.event;version="[1.14,
+ 2)",org.onosproject.net;version="[1.14,2)",org.onosproject.net.config;v
+ ersion="[1.14,2)",org.onosproject.net.config.basics;version="[1.14,2)",
+ org.slf4j;version="[1.7,2)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Service-Component: OSGI-INF/nctu.winlab.dhcpfwd.AppComponent.xml
+Tool: Bnd-3.3.0.201609221906

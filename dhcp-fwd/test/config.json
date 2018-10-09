@@ -1,0 +1,14 @@
+{
+    "apps": {
+        "nctu.winlab.dhcpfwd" : {
+            "dhcp" : {
+                "dhcpServers" : [
+                    {
+                        "name" : "DHCPSRV1",
+                        "connectPoint" : "of:0000000000000001/1"
+                    }
+                ]
+            }
+        }
+    }
+}
