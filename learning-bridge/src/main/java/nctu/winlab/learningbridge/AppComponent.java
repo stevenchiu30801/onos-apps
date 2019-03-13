@@ -109,8 +109,8 @@ public class AppComponent {
         selector.matchEthType(Ethernet.TYPE_IPV4);
         packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId);
 
-        selector.matchEthType(Ethernet.TYPE_IPV6);
-        packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId);
+        // selector.matchEthType(Ethernet.TYPE_IPV6);
+        // packetService.requestPackets(selector.build(), PacketPriority.REACTIVE, appId);
     }
 
     private void learningMac(DeviceId id, MacAddress mac, PortNumber port) {
