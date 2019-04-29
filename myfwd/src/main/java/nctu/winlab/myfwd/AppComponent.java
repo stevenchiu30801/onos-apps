@@ -59,7 +59,6 @@ import org.onosproject.net.topology.TopologyVertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.Boolean;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
@@ -74,6 +73,7 @@ public class AppComponent {
 
     private static final int DEFAULT_TIMEOUT = 10;
     private static final int DEFAULT_PRIORITY = 10;
+    private static final boolean RETURNING_PATH = true;
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -179,12 +179,43 @@ public class AppComponent {
         flowObjectiveService.forward(deviceId, forwardingObjective);
     }
 
+    private void installReverseRule(PacketContext context, DeviceId deviceId, PortNumber portNumber) {
+        log.info(String.format("Install flow rule on %s", deviceId.toString()));
+        // Disable Packet-out since the pre-installed rules would be installed after the packet arrives the next device
+        // This causes another Packet-in
+        // //  Packet-out if DeviceID is the device receiving Packet-in
+        // if (deviceId.equals(context.inPacket().receivedFrom().deviceId()))
+        //     packetOut(context, portNumber);
+
+        InboundPacket pkt = context.inPacket();
+
+        TrafficSelector selectorBuilder = DefaultTrafficSelector.builder()
+                .matchEthSrc(pkt.parsed().getDestinationMAC())
+                .matchEthDst(pkt.parsed().getSourceMAC())
+                .build();
+
+        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
+                .setOutput(portNumber)
+                .build();
+
+        ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
+                .withSelector(selectorBuilder)
+                .withTreatment(treatment)
+                .withPriority(DEFAULT_PRIORITY)
+                .withFlag(ForwardingObjective.Flag.VERSATILE)
+                .fromApp(appId)
+                .makeTemporary(DEFAULT_TIMEOUT)
+                .add();
+
+        flowObjectiveService.forward(deviceId, forwardingObjective);
+    }
+
     private Path getPath(Topology topology, DeviceId src, DeviceId dst) {
         // TODO: Try to build topology graph and find a path using BFS
         // TopologyGraph topologyGraph = topologyService.getGraph(topology);
         // int deviceCount = topology.deviceCount();
         // HashMap<DeviceId, DeviceId> pred = new HashMap<>();
-        // HashMap<DeviceId, Boolean> visited = new HashMap<>();
+        // HashMap<DeviceId, boolean> visited = new HashMap<>();
         //
         // Queue<DeviceId> queue = new LinkedList<>();
 
@@ -234,9 +265,11 @@ public class AppComponent {
                 return;
             }
 
-            HostId id = HostId.hostId(ethPkt.getDestinationMAC());
+            HostId srcId = HostId.hostId(ethPkt.getSourceMAC());
+            HostId dstId = HostId.hostId(ethPkt.getDestinationMAC());
 
-            Host dst = hostService.getHost(id);
+            Host src = hostService.getHost(srcId);
+            Host dst = hostService.getHost(dstId);
             if(dst == null) {
                 flood(context);
                 return;
@@ -264,9 +297,16 @@ public class AppComponent {
                 return;
             }
 
-            log.info(String.format("Start to install path from %s to %s",
-                                   HostId.hostId(ethPkt.getSourceMAC()).toString(),
-                                   HostId.hostId(ethPkt.getDestinationMAC()).toString()));
+            if (RETURNING_PATH == true) {
+                log.info(String.format("Start to install forwarding and returning path from %s to %s",
+                                       HostId.hostId(ethPkt.getSourceMAC()).toString(),
+                                       HostId.hostId(ethPkt.getDestinationMAC()).toString()));
+            }
+            else {
+                log.info(String.format("Start to install forwarding path from %s to %s",
+                                       HostId.hostId(ethPkt.getSourceMAC()).toString(),
+                                       HostId.hostId(ethPkt.getDestinationMAC()).toString()));
+            }
             // First install flow rule on the dst device
             // Since the path does not include the link between the dst device and the dst host
             installRule(context, dst.location().deviceId(), dst.location().port());
@@ -275,6 +315,14 @@ public class AppComponent {
             for (int i = links.size(); i > 0; i--) {
                 Link link = links.get(i - 1);
                 installRule(context, link.src().deviceId(), link.src().port());
+            }
+            if (RETURNING_PATH == true) {
+                for (int i = links.size(); i > 0; i--) {
+                    Link link = links.get(i - 1);
+                    installReverseRule(context, link.dst().deviceId(), link.dst().port());
+                }
+                // Install flow rule from src device to src host of returning path
+                installReverseRule(context, src.location().deviceId(), src.location().port());
             }
             // installRule(context, path.src().port());
         }
