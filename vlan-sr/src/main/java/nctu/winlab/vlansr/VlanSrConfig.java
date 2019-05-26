@@ -58,10 +58,12 @@ public class VlanSrConfig extends Config<ApplicationId> {
             deviceId = DeviceId.deviceId(jsonNode.path(DPID).asText());
             sid = VlanId.vlanId((short) jsonNode.path(SID).asInt());
             isEdgeSwitch = jsonNode.path(ISEDGESWITCH).asBoolean();
-            if (isEdgeSwitch == true)
+            if (isEdgeSwitch == true) {
                 subnet = Optional.of(IpPrefix.valueOf(jsonNode.get(SUBNET).asText()));
-            else
+            }
+            else {
                 subnet = Optional.empty();
+            }
 
             config.add(new VlanSr(deviceId, sid, isEdgeSwitch, subnet));
         });

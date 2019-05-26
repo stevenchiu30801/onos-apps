@@ -6,19 +6,19 @@
                     {
                         "dpid": "of:0000000000000001",
                         "sid": 101,
-                        "isEdgeSwitch": true,
-                        "subnet": "10.0.0.0/24"
+                        "isEdgeSwitch": false
                     },
                     {
                         "dpid": "of:0000000000000002",
                         "sid": 102,
-                        "isEdgeSwitch": false
+                        "isEdgeSwitch": true,
+                        "subnet": "10.0.2.0/24"
                     },
                     {
                         "dpid": "of:0000000000000003",
                         "sid": 103,
                         "isEdgeSwitch": true,
-                        "subnet": "10.0.1.0/24"
+                        "subnet": "10.0.3.0/24"
                     }
 
                 ]
